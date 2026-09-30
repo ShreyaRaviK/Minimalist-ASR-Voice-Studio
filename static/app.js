@@ -372,13 +372,15 @@ async function handleAudioFile(file) {
   await processAudioWithWhisper(file, file.name);
 }
 
+// In-browser Whisper pipeline cache
+let inBrowserWhisper = null;
+
 async function processAudioWithWhisper(fileOrBlob, filename) {
   showLoader(true, "Transcribing with Whisper AI...");
   
   try {
-    // Decode audio in browser to 16kHz mono WAV
+    // 1. Try server endpoint first (works locally or if API key configured)
     const wavBlob = await convertTo16kWav(fileOrBlob);
-
     const formData = new FormData();
     formData.append("file", wavBlob, filename.replace(/\.[^/.]+$/, "") + ".wav");
     formData.append("language", dom.languageSelect.value);
@@ -386,30 +388,70 @@ async function processAudioWithWhisper(fileOrBlob, filename) {
     formData.append("fix_repetitions", "true");
     formData.append("auto_punctuate", "true");
 
-    const res = await fetch("/api/transcribe", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || "Failed to transcribe");
+    let serverSuccess = false;
+    try {
+      const res = await fetch("/api/transcribe", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        state.fullText = data.cleaned_text || "No speech detected.";
+        dom.transcriptBody.innerText = state.fullText;
+        updateStats(state.fullText, data.duration);
+        showToast("Transcription complete.");
+        serverSuccess = true;
+      }
+    } catch (e) {
+      serverSuccess = false;
     }
 
-    state.fullText = data.cleaned_text || "No speech detected in audio.";
-    dom.transcriptBody.innerText = state.fullText;
-    updateStats(state.fullText, data.duration);
-
-    if (data.detected_language) {
-      dom.statusLabel.textContent = `Language: ${data.detected_language.toUpperCase()}`;
+    // 2. If server has no PyTorch/Groq (Vercel serverless mode), run in-browser Whisper
+    if (!serverSuccess) {
+      showLoader(true, "Processing with in-browser Whisper (WebAssembly)...");
+      await transcribeInBrowser(fileOrBlob);
     }
-    showToast("Transcription complete.");
 
   } catch (err) {
     console.error("Transcription error:", err);
     showToast(`Error: ${err.message}`);
   } finally {
     showLoader(false);
+  }
+}
+
+async function transcribeInBrowser(fileOrBlob) {
+  try {
+    if (!inBrowserWhisper) {
+      showLoader(true, "Initializing in-browser Whisper model...");
+      const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+      env.allowLocalModels = false;
+      inBrowserWhisper = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+    }
+
+    showLoader(true, "Transcribing speech from audio...");
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+
+    // Resample to 16,000 Hz mono
+    const targetRate = 16000;
+    const offlineCtx = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
+    const src = offlineCtx.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offlineCtx.destination);
+    src.start(0);
+
+    const rendered = await offlineCtx.startRendering();
+    const channelData = rendered.getChannelData(0);
+
+    const output = await inBrowserWhisper(channelData);
+    const rawText = output.text || "";
+
+    // Clean text via serverless endpoint or client cleaner
+    await cleanOnServer(rawText);
+    showToast("Transcription complete.");
+
+  } catch (err) {
+    console.error("In-browser Whisper fallback notice:", err);
+    showToast("Could not process audio format.");
   }
 }
 

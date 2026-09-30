@@ -98,18 +98,29 @@ cd asr-transcribe
 pip install -r requirements.txt
 ```
 
-### 3. Launch the Server
-
-#### Option A: One-Click Launcher (Windows)
-Double-click `run.bat` in the repository root.
-
-#### Option B: Command Line
+### 3. Launch Locally
 ```bash
 python -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
+Open [**http://localhost:8000**](http://localhost:8000).
 
-### 4. Open in Your Browser
-Visit [**http://localhost:8000**](http://localhost:8000)
+---
+
+## 🌐 Deploy to Vercel
+
+This repository is pre-configured with `vercel.json` and optimized for Vercel's Serverless Functions (< 20 MB bundle size, staying far below Vercel's 500 MB limit):
+
+1. **Push your code to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Configure Vercel serverless deployment"
+   git push origin main
+   ```
+2. **Deploy on Vercel**:
+   - Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
+   - Import your GitHub repository (`Minimalist-ASR-Voice-Studio`).
+   - Click **Deploy** (no build settings changes required!).
+   - Done! Your app is live with SSL, global CDN, and free serverless endpoints.
 
 <br/>
 
