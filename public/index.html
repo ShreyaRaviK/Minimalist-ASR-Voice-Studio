@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transcribe</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- Clean Minimalist Header -->
+    <header class="top-nav">
+      <div class="brand">
+        <svg class="brand-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+        <span class="brand-name">Transcribe</span>
+      </div>
+
+      <div class="nav-controls">
+        <select class="clean-select" id="languageSelect" title="Select audio language">
+          <option value="en" selected>English</option>
+          <option value="auto">Auto-detect language</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="hi">Hindi</option>
+          <option value="zh">Chinese</option>
+          <option value="ja">Japanese</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+        </select>
+
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span id="statusLabel">Ready</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Unified Studio Card -->
+    <main class="studio-card" id="dropZone">
+      
+      <!-- Top Actions Bar -->
+      <div class="action-bar">
+        <div class="action-left">
+          <!-- Primary Record Button -->
+          <button class="record-btn" id="btnRecord">
+            <span class="rec-dot"></span>
+            <span id="recordBtnText">Record</span>
+          </button>
+
+          <!-- Recording Timer -->
+          <div class="rec-timer" id="recordingTimer" style="display: none;">00:00</div>
+
+          <!-- Minimal Waveform Strip -->
+          <div class="wave-box" id="waveBox" style="display: none;">
+            <canvas id="audioVisualizer"></canvas>
+          </div>
+
+          <!-- Upload Audio File -->
+          <label class="upload-btn" for="audioFileInput" title="Upload an audio or video file">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Upload audio</span>
+          </label>
+          <input type="file" id="audioFileInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.flac,.webm,.aac" style="display:none;" />
+        </div>
+
+        <div class="action-right">
+          <!-- Clean Copy Button -->
+          <button class="icon-btn" id="btnCopy" title="Copy transcript">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>Copy</span>
+          </button>
+
+          <!-- Listen (TTS) -->
+          <button class="icon-btn" id="btnSpeak" title="Listen aloud">
+            <svg id="speakIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <span id="speakLabel">Listen</span>
+          </button>
+
+          <!-- Download TXT -->
+          <button class="icon-btn" id="btnDownload" title="Download as text file">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download</span>
+          </button>
+
+          <!-- Clear Button -->
+          <button class="icon-btn btn-danger-ghost" id="btnClear" title="Clear transcript">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Minimal Audio Player (Appears when audio file is loaded) -->
+      <div class="audio-strip" id="audioPlayerStrip" style="display: none;">
+        <button class="strip-play-btn" id="btnPlayPause">
+          <svg id="playIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="pauseIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <span class="strip-filename" id="stripFilename">recording.wav</span>
+        <input type="range" class="strip-slider" id="stripSlider" min="0" max="100" value="0" />
+        <span class="strip-time" id="stripTime">00:00 / 00:00</span>
+        <audio id="htmlAudio" style="display:none;"></audio>
+      </div>
+
+      <!-- Content Area / Clean Editor -->
+      <div class="editor-wrapper">
+        <!-- Transcribing Loading Indicator -->
+        <div class="transcribe-loader" id="transcribeLoader" style="display: none;">
+          <div class="spinner-ring"></div>
+          <span id="transcribeMessage">Transcribing audio...</span>
+        </div>
+
+        <!-- Editable Transcript Document -->
+        <div 
+          class="transcript-body" 
+          id="transcriptBody" 
+          contenteditable="true" 
+          spellcheck="true" 
+          data-placeholder="Click Record or drop an audio file here. What you say will be transcribed cleanly without hesitation or filler words."
+        ></div>
+      </div>
+
+      <!-- Clean Bottom Meta Bar -->
+      <div class="meta-footer">
+        <div class="stats-group">
+          <span id="statWords">0 words</span>
+          <span class="divider">•</span>
+          <span id="statChars">0 characters</span>
+          <span class="divider" id="durationDivider" style="display:none;">•</span>
+          <span id="statDuration" style="display:none;">0s</span>
+        </div>
+        <div class="footer-drop-hint">
+          <span>Drop .mp3, .wav, or .m4a here</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-box" id="toastBox"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
