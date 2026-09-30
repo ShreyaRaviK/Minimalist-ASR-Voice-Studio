@@ -1,64 +1,160 @@
-# Transcribe — Minimalist ASR Voice Studio
+<div align="center">
 
-A clean, distraction-free Automatic Speech Recognition (ASR) tool with live voice dictation, neural audio transcription, and intelligent text cleaning.
+# 🎙️ Transcribe
 
----
+**A minimalist, distraction-free speech recognition studio powered by OpenAI Whisper.**  
+Real-time live dictation, audio file transcription, and natural language cleaning in a single clean workspace.
 
-## 🛠️ Tools & Technologies Used
+<br/>
 
-### Backend
-- **Python 3.12**: Core server runtime.
-- **FastAPI**: Asynchronous web framework for high-performance API endpoints.
-- **Uvicorn**: Lightning-fast ASGI production web server.
-- **OpenAI Whisper (`openai-whisper`)**: Deep neural network architecture for state-of-the-art automatic speech recognition.
-- **PyTorch (`torch`)**: Machine learning tensor runtime executing the Whisper ASR model on CPU / CUDA.
-- **SoundFile (`soundfile`)**: Low-level audio I/O library for reading PCM audio arrays without external binary dependencies.
-- **SciPy (`scipy`)**: Signal processing library for high-quality audio resampling.
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![OpenAI Whisper](https://img.shields.io/badge/OpenAI-Whisper_ASR-412991?style=flat-square&logo=openai&logoColor=white)](https://github.com/openai/whisper)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.5+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-### Frontend
-- **HTML5 & Semantic Elements**: Clean document structure.
-- **Vanilla CSS3**: Minimalist dark theme inspired by Linear and Notion, responsive flexbox layout, and CSS custom properties.
-- **Vanilla JavaScript (ES6+)**:
-  - **Web Speech API (`webkitSpeechRecognition`)**: Native browser streaming ASR for instant real-time live dictation.
-  - **Web Audio API (`AudioContext`, `OfflineAudioContext`, `AnalyserNode`)**: Decodes any user audio format (`.mp3`, `.m4a`, `.wav`, etc.) directly in the browser and drives the real-time waveform visualizer.
-  - **HTML5 Canvas**: Frame-by-frame animated frequency waveform strip.
-  - **Speech Synthesis API (`speechSynthesis`)**: Built-in Text-to-Speech (TTS) for listening back to transcripts.
+<br/>
+
+<img src="screenshot.png" alt="Transcribe Application Interface" width="880" style="border-radius: 12px; box-shadow: 0 20px 45px -10px rgba(0,0,0,0.6);" />
+
+</div>
+
+<br/>
 
 ---
 
-## 🚀 How to Run the Project
+## ⚡ Highlights
 
-### Prerequisites
-Make sure you have Python 3.10+ installed on your system.
+| Feature | Description |
+| :--- | :--- |
+| **🎙️ Real-time Dictation** | Speak into your microphone and see words stream onto the page instantly with zero latency via native Web Speech streaming. |
+| **🧠 Neural Whisper Engine** | Upload any audio file or record long-form thoughts; processed locally via OpenAI Whisper's deep neural acoustic model. |
+| **✨ Smart Text Cleaner** | Conversational filler words (`um`, `uh`, `you know`, `like`, `basically`), stutter repetitions (`the the`), and hesitation commas are automatically stripped away. |
+| **📁 Universal Audio Support** | Drag and drop `.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg`, or `.webm`. In-browser hardware decoding bypasses external `ffmpeg` dependencies. |
+| **🎵 Minimal Audio Player** | Scrub through uploaded audio with playback controls and real-time cursor sync. |
+| **🔤 Clean Typography** | Distraction-free, editable document canvas inspired by *Linear* and *Notion*. |
+| **📋 1-Click Utilities** | Quick actions for **Copy to Clipboard**, **Listen** (Text-to-Speech), and **Download** (`.txt`). |
 
-### 1. Install Dependencies
-Open PowerShell or Command Prompt in the project folder and run:
+<br/>
+
+---
+
+## 📸 Interface Preview
+
+<div align="center">
+
+### 🔴 Active Recording & Waveform Stream
+<img src="recording_preview.png" alt="Active Voice Recording State" width="880" style="border-radius: 12px; box-shadow: 0 15px 35px -8px rgba(0,0,0,0.5);" />
+
+*Clean recording state with live timer, dynamic audio frequency bars, and streaming interim speech.*
+
+</div>
+
+<br/>
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+```
+                    ┌────────────────────────────────────────┐
+                    │               Browser UI               │
+                    │   HTML5 Canvas · Web Audio · Web Speech │
+                    └───────────────────┬────────────────────┘
+                                        │
+                         HTTP / REST    │  WebSocket / WAV Audio
+                                        ▼
+                    ┌────────────────────────────────────────┐
+                    │          FastAPI Web Server            │
+                    │        (Python 3.12 + Uvicorn)         │
+                    └───────────┬────────────────┬───────────┘
+                                │                │
+                                ▼                ▼
+                     ┌──────────────────┐  ┌──────────────────┐
+                     │  OpenAI Whisper  │  │   Clean Engine   │
+                     │  (PyTorch / ASR) │  │  (Regex & NLP)   │
+                     └──────────────────┘  └──────────────────┘
+```
+
+- **Backend Framework**: [FastAPI](https://fastapi.tiangolo.com) for asynchronous, high-throughput REST endpoints.
+- **ASR Engine**: [OpenAI Whisper](https://github.com/openai/whisper) (`base` model cached locally for offline accuracy).
+- **Audio Processing**: [SoundFile](https://python-soundfile.readthedocs.io) and [SciPy](https://scipy.org) for in-memory 16 kHz PCM resampling.
+- **Frontend Architecture**: Pure Vanilla ES6+ & CSS3 with the **Web Audio API** (`AudioContext`, `AnalyserNode`) and **Web Speech API**.
+
+<br/>
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Navigate
+```bash
+git clone https://github.com/your-username/asr-transcribe.git
+cd asr-transcribe
+```
+
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Start the Server
+### 3. Launch the Server
 
 #### Option A: One-Click Launcher (Windows)
-Double-click `run.bat` in the project root.
+Double-click `run.bat` in the repository root.
 
-#### Option B: Terminal Command
-Run the following command:
+#### Option B: Command Line
 ```bash
 python -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-### 3. Open in Browser
-Navigate to:
-```
-http://localhost:8000
-```
+### 4. Open in Your Browser
+Visit [**http://localhost:8000**](http://localhost:8000)
+
+<br/>
 
 ---
 
-## 💡 How to Use
+## 💡 How It Works
 
-1. **Speak**: Click `Record` to start speaking. Click `Stop` when finished.
-2. **Upload Audio**: Click `Upload audio` or drag and drop any audio file (`.mp3`, `.wav`, `.m4a`, etc.) directly into the card.
-3. **Clean Output**: Fillers (`um`, `uh`, `you know`, `like`), stutters, and hesitation commas are automatically cleaned up.
-4. **Actions**: Use the top-right toolbar buttons to **Copy**, **Listen** (read aloud), **Download** as `.txt`, or **Clear** the editor.
+1. **Speak**: Click `Record` to start live streaming dictation. Click `Stop` when done.
+2. **Upload**: Drag & drop any audio file (`.mp3`, `.wav`, `.m4a`, etc.) directly onto the card.
+3. **Auto-Clean**: The built-in cleaner automatically filters hesitation phrases and formats punctuation:
+   ```
+   Raw Speech:
+   "Um basically we should, uh, launch the new feature tomorrow. Make sure the team the team tests it."
+   
+   Clean Transcript:
+   "We should launch the new feature tomorrow. Make sure the team tests it."
+   ```
+4. **Export**: Click `Copy` to copy text to clipboard, `Listen` to read it aloud, or `Download` to save as a `.txt` file.
+
+<br/>
+
+---
+
+## 📂 Project Structure
+
+```
+ASR_main/
+├── app.py                # FastAPI backend & transcription router
+├── cleaner.py            # Natural language cleaner & filler removal
+├── run.bat               # Windows 1-click startup script
+├── requirements.txt      # Core Python dependencies
+├── screenshot.png        # Product preview screenshot
+├── recording_preview.png # Live recording preview screenshot
+├── static/
+│   ├── index.html        # Minimalist studio interface
+│   ├── style.css         # Dark theme & typography styling
+│   ├── app.js            # Audio recording, Web Audio & Web Speech logic
+│   └── favicon.svg       # Microphone soundwave icon
+└── README.md             # Project documentation
+```
+
+<br/>
+
+---
+
+<div align="center">
+  <sub>Built with Python, FastAPI, and OpenAI Whisper. Minimalist, fast, and private.</sub>
+</div>

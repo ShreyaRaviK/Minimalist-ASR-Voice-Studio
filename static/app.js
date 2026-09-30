@@ -66,6 +66,44 @@ function init() {
   setupEventListeners();
   setupSpeechRecognition();
   checkEngineStatus();
+
+  // If ?demo=true or ?demo=recording, populate realistic state for screenshots
+  const params = new URLSearchParams(window.location.search);
+  const demoType = params.get('demo');
+  if (demoType === 'true') {
+    const demoSample = "Good morning everyone. We conducted a full review of our automatic speech recognition pipeline today. The neural Whisper model achieves high word accuracy across multiple languages, while the natural language cleaning engine automatically strips conversational hesitation, filler words, and stutter repetitions.\n\nMoving forward, we will deploy the streaming endpoint to our production cluster and integrate the live audio visualizer across all client platforms.";
+    dom.transcriptBody.innerText = demoSample;
+    state.fullText = demoSample;
+    updateStats(demoSample, 14.8);
+    dom.stripFilename.textContent = "product_discussion.m4a";
+    dom.audioPlayerStrip.style.display = 'flex';
+    dom.stripTime.textContent = "00:08 / 00:15";
+    dom.stripSlider.value = 53;
+  } else if (demoType === 'recording') {
+    dom.btnRecord.classList.add('is-recording');
+    dom.recordBtnText.textContent = "Stop";
+    dom.recordingTimer.style.display = 'block';
+    dom.recordingTimer.textContent = "00:12";
+    dom.waveBox.style.display = 'block';
+    dom.statusPill.classList.add('recording');
+    dom.statusLabel.textContent = "Listening...";
+    
+    // Draw static demo audio waveform on canvas
+    const canvas = dom.canvas;
+    const ctx = canvas.getContext('2d');
+    canvas.width = 90;
+    canvas.height = 24;
+    ctx.fillStyle = '#ef4444';
+    const heights = [6, 12, 18, 10, 22, 14, 8, 16, 20, 11, 15, 7, 19, 13];
+    heights.forEach((h, i) => {
+      const y = (24 - h) / 2;
+      ctx.fillRect(i * 6, y, 3, h);
+    });
+
+    const liveText = "We are currently testing the live voice recognition stream";
+    dom.transcriptBody.innerHTML = `${liveText} <span class="live-interim">and words appear as you speak...</span>`;
+    updateStats(liveText);
+  }
 }
 
 async function checkEngineStatus() {
